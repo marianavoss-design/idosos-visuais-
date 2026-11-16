@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FácilAcesso - Assistente Visual Sênior</title>
+    <!-- Tailwind CSS para estrutura e responsividade -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Ícones Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Fonte legível e clara -->
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Variáveis de Tema e Acessibilidade */
+        :root {
+            --bg-primary: #F8FAFC;
+            --bg-secondary: #FFFFFF;
+            --text-primary: #0F172A;
+            --text-secondary: #334155;
+            --border-color: #0F172A;
+            --accent-bg: #1D4ED8;
+            --accent-text: #FFFFFF;
+            --danger-bg: #B91C1C;
+            --danger-text: #FFFFFF;
+            --success-bg: #15803D;
+            --success-text: #FFFFFF;
+            --focus-ring: #F59E0B;
+            --base-font-size: 24px;
+        }
+
+        /* Tema 2: Alto Contraste (Preto e Amarelo) */
+        body.theme-high-contrast {
+            --bg-primary: #000000;
+            --bg-secondary: #121212;
+            --text-primary: #FFFF00;
+            --text-secondary: #FFFFFF;
+            --border-color: #FFFF00;
+            --accent-bg: #FFFF00;
+            --accent-text: #000000;
+            --danger-bg: #FF3333;
+            --danger-text: #000000;
+            --success-bg: #00FF66;
+            --success-text: #000000;
+            --focus-ring: #FFFFFF;
+        }
+
+        /* Tema 3: Modo Escuro Suave (Conforto Visual) */
+        body.theme-soft-dark {
+            --bg-primary: #1E293B;
+            --bg-secondary: #0F172A;
+            --text-primary: #F8FAFC;
+            --text-secondary: #CBD5E1;
+            --border-color: #94A3B8;
+            --accent-bg: #38BDF8;
+            --accent-text: #0F172A;
+            --danger-bg: #F87171;
+            --danger-text: #0F172A;
+            --success-bg: #4ADE80;
+            --success-text: #0F172A;
+            --focus-ring: #FACC15;
+        }
+
+        html {
+            font-size: var(--base-font-size);
+            font-family: 'Atkinson Hyperlegible', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.2s ease, color 0.2s ease;
+            line-height: 1.45;
+            overflow-x: hidden;
+        }
+
+        /* Cartões e Bordas Grossas */
+        .accessible-card {
+            background-color: var(--bg-secondary);
+            border: 4px solid var(--border-color);
+            border-radius: 1.25rem;
+            box-shadow: 0 6px 0 var(--border-color);
+        }
+
+        /* Botões Gigantes e Acessíveis */
+        .btn-accessible {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 4px solid var(--border-color);
+            border-radius: 1.25rem;
+            font-weight: 700;
+            min-height: 84px;
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            transition: transform 0.1s ease, background-color 0.15s ease;
+            cursor: pointer;
+            text-align: center;
+            box-shadow: 0 5px 0 var(--border-color);
+        }
+
+        .btn-accessible:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 var(--border-color);
+        }
+
+        .btn-primary {
+            background-color: var(--accent-bg);
+            color: var(--accent-text);
+            border: 4px solid var(--border-color);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-bg);
+            color: var(--danger-text);
+            border: 4px solid var(--border-color);
+        }
+
+        .btn-success {
+            background-color: var(--success-bg);
+            color: var(--success-text);
+            border: 4px solid var(--border-color);
+        }
+
+        /* Foco Altamente Visível */
+        button:focus-visible, input:focus-visible, textarea:focus-visible {
+            outline: 6px solid var(--focus-ring) !important;
+            outline-offset: 4px !important;
+        }
+
+        /* Controle Deslizante (Slider) Gigante para Lupa */
+        input[type="range"].giant-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 28px;
+            background: var(--bg-primary);
+            border: 4px solid var(--border-color);
+            border-radius: 999px;
+        }
+
+        input[type="range"].giant-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: var(--accent-bg);
+            border: 4px solid var(--border-color);
+            cursor: pointer;
+        }
+
+        /* Estilo do vídeo da lupa */
+        #camera-container {
+            position: relative;
+            overflow: hidden;
+            border: 4px solid var(--border-color);
+            border-radius: 1.25rem;
+            background-color: #000;
+            aspect-ratio: 4 / 3;
+            max-height: 55vh;
+        }
+
+        #camera-feed, #frozen-canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform-origin: center center;
+            transition: transform 0.1s ease-out, filter 0.2s ease;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- BARRA DE ACESSIBILIDADE PERMANENTE NO TOPO -->
+    <header class="sticky top-0 z-40 p-3 sm:p-4 border-b-4" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+        <div class="max-w-5xl mx-auto flex flex-col gap-3">
+            <!-- Linha 1: Nome do App e Indicador de Tamanho -->
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="eye" class="w-10 h-10 shrink-0" stroke-width="3"></i>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight">FácilAcesso</h1>
+                </div>
+                <span id="font-size-badge" class="px-3 py-1 rounded-xl font-bold text-base border-2" style="border-color: var(--border-color);">
+                    Letra: 24px
+                </span>
+            </div>
+
+            <!-- Linha 2: Controles Rápidos Permanentes -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <!-- Diminuir Letra -->
+                <button onclick="changeFontSize(-3)" data-voice="Diminuir tamanho da letra" class="btn-accessible !min-h-[72px] !py-2 !px-3 text-base sm:text-lg" aria-label="Diminuir tamanho da letra">
+                    <i data-lucide="zoom-out" class="w-8 h-8 shrink-0" stroke-width="3"></i>
+                    <span>Letra A-</span>
+                </button>
+
+                <!-- Aumentar Letra -->
+                <button onclick="changeFontSize(3)" data-voice="Aumentar tamanho da letra" class="btn-accessible !min-h-[72px] !py-2 !px-3 text-base sm:text-lg" aria-label="Aumentar tamanho da letra">
+                    <i data-lucide="zoom-in" class="w-8 h-8 shrink-0" stroke-width="3"></i>
+                    <span>Letra A+</span>
+                </button>
+
+                <!-- Alternar Contraste -->
+                <button onclick="cycleTheme()" id="btn-theme" data-voice="Mudar cores e contraste da tela" class="btn-accessible !min-h-[72px] !py-2 !px-3 text-base sm:text-lg" aria-label="Alternar modo de alto contraste">
+                    <i data-lucide="sun-moon" class="w-8 h-8 shrink-0" stroke-width="3"></i>
+                    <span id="theme-label">Cores: Claro</span>
+                </button>
+
+                <!-- Ativar / Desativar Voz -->
+                <button onclick="toggleGlobalVoice()" id="btn-voice-toggle" data-voice="Voz ativada" class="btn-accessible btn-primary !min-h-[72px] !py-2 !px-3 text-base sm:text-lg" aria-pressed="true">
+                    <i id="voice-icon" data-lucide="volume-2" class="w-8 h-8 shrink-0" stroke-width="3"></i>
+                    <span id="voice-label">Voz: LIGADA</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 pb-16">
+
+        <!-- BOTÃO VOLTAR AO INÍCIO (Visível apenas dentro das ferramentas) -->
+        <div id="back-bar" class="hidden mb-6">
+            <button onclick="navigateTo('home')" data-voice="Voltar para o menu principal" class="btn-accessible btn-primary w-full sm:w-auto !px-6 text-xl">
+                <i data-lucide="arrow-left" class="w-9 h-9 shrink-0" stroke-width="3"></i>
+                <span>VOLTAR AO INÍCIO</span>
+            </button>
+        </div>
+
+        <!-- TELA 1: MENU PRINCIPAL -->
+        <section id="view-home" class="space-y-6">
+            <div class="accessible-card p-5 text-center">
+                <p class="font-bold text-xl sm:text-2xl">Toque em uma das opções grandes abaixo:</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Botão 1: Lupa de Leitura -->
+                <button onclick="navigateTo('magnifier')" data-voice="Abrir Lupa de Leitura com a câmera" class="btn-accessible flex-col !min-h-[190px] p-6 text-center">
+                    <i data-lucide="search" class="w-16 h-16 mb-2" stroke-width="2.8"></i>
+                    <span class="text-2xl font-bold block">Lupa de Leitura</span>
+                    <span class="text-base font-normal opacity-90">Ampliar bulas, preços e rótulos</span>
+                </button>
+
+                <!-- Botão 2: Ler Texto em Voz Alta -->
+                <button onclick="navigateTo('reader')" data-voice="Abrir leitor de texto em voz alta" class="btn-accessible flex-col !min-h-[190px] p-6 text-center">
+                    <i data-lucide="megaphone" class="w-16 h-16 mb-2" stroke-width="2.8"></i>
+                    <span class="text-2xl font-bold block">Ler Texto em Voz Alta</span>
+                    <span class="text-base font-normal opacity-90">Ouvir mensagens e textos escritos</span>
+                </button>
+
+                <!-- Botão 3: Contatos Rápidos -->
+                <button onclick="navigateTo('contacts')" data-voice="Abrir Contatos Rápidos para ligar" class="btn-accessible flex-col !min-h-[190px] p-6 text-center">
+                    <i data-lucide="phone-call" class="w-16 h-16 mb-2" stroke-width="2.8"></i>
+                    <span class="text-2xl font-bold block">Contatos Rápidos</span>
+                    <span class="text-base font-normal opacity-90">Ligar para Família, Médico ou 192</span>
+                </button>
+
+                <!-- Botão 4: Lembrete de Remédios -->
+                <button onclick="navigateTo('meds')" data-voice="Abrir Lembrete de Remédios" class="btn-accessible flex-col !min-h-[190px] p-6 text-center">
+                    <i data-lucide="pill" class="w-16 h-16 mb-2" stroke-width="2.8"></i>
+                    <span class="text-2xl font-bold block">Lembrete de Remédios</span>
+                    <span class="text-base font-normal opacity-90">Horários e marcar remédio tomado</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- TELA 2: LUPA DE LEITURA -->
+        <section id="view-magnifier" class="hidden space-y-6">
+            <div class="accessible-card p-5">
+                <h2 class="text-2xl font-bold mb-2 flex items-center gap-3">
+                    <i data-lucide="search" class="w-9 h-9" stroke-width="3"></i>
+                    Lupa de Leitura
+                </h2>
+                <p class="text-base opacity-90">Aponte a câmera para o texto que deseja ler.</p>
+            </div>
+
+            <!-- Área da Câmera -->
+            <div id="camera-container" class="w-full flex items-center justify-center">
+                <video id="camera-feed" autoplay playsinline muted></video>
+                <canvas id="frozen-canvas" class="hidden"></canvas>
+                
+                <!-- Mensagem caso a câmera não esteja disponível -->
+                <div id="camera-fallback" class="hidden p-6 text-center text-white space-y-4">
+                    <i data-lucide="camera-off" class="w-16 h-16 mx-auto text-yellow-400"></i>
+                    <p class="text-xl font-bold">Câmera não disponível neste aparelho ou sem permissão.</p>
+                    <p class="text-base">Você pode testar o controle de zoom usando a imagem de exemplo abaixo.</p>
+                    <button onclick="activateDemoMagnifier()" data-voice="Usar imagem de exemplo na lupa" class="btn-accessible btn-primary mx-auto">
+                        Usar Bula de Exemplo
+                    </button>
+                </div>
+            </div>
+
+            <!-- Controles da Lupa -->
+            <div class="accessible-card p-5 space-y-6">
+                <!-- Controle de Zoom -->
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center font-bold text-xl">
+                        <label for="zoom-slider">Aumento (Zoom):</label>
+                        <span id="zoom-value" class="px-3 py-1 rounded-lg border-2" style="border-color: var(--border-color);">1.0x</span>
+                    </div>
+                    <input type="range" id="zoom-slider" min="1" max="5" step="0.2" value="1" class="giant-slider" oninput="updateZoom(this.value)">
+                    <div class="flex justify-between text-base font-bold">
+                        <span>Normal (1x)</span>
+                        <span>Máximo (5x)</span>
+                    </div>
+                </div>
+
+                <!-- Botões de Ação da Lupa -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <button onclick="toggleFlashlight()" id="btn-flash" data-voice="Ligar ou desligar luz e brilho" class="btn-accessible">
+                        <i data-lucide="flashlight" class="w-9 h-9 shrink-0" stroke-width="3"></i>
+                        <span id="flash-label">Luz / Brilho: OFF</span>
+                    </button>
+
+                    <button onclick="toggleFreeze()" id="btn-freeze" data-voice="Congelar ou descongelar imagem" class="btn-accessible btn-primary">
+                        <i id="freeze-icon" data-lucide="pause-circle" class="w-9 h-9 shrink-0" stroke-width="3"></i>
+                        <span id="freeze-label">Congelar Foto</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TELA 3: LER TEXTO EM VOZ ALTA -->
+        <section id="view-reader" class="hidden space-y-6">
+            <div class="accessible-card p-5">
+                <h2 class="text-2xl font-bold mb-2 flex items-center gap-3">
+                    <i data-lucide="megaphone" class="w-9 h-9" stroke-width="3"></i>
+                    Ler Texto em Voz Alta
+                </h2>
+                <p class="text-base opacity-90">Cole ou digite um texto abaixo para o celular ler para você.</p>
+            </div>
+
+            <div class="accessible-card p-5 space-y-5">
+                <label for="text-to-read" class="block font-bold text-xl">Texto para leitura:</label>
+                <textarea id="text-to-read" rows="5" class="w-full p-4 rounded-xl border-4 font-bold text-xl" style="background-color: var(--bg-primary); color: var(--text-primary); border-color: var(--border-color);" placeholder="Toque aqui para digitar ou use o botão Colar Texto...">Bom dia! Lembre-se de beber bastante água hoje e tomar seus medicamentos no horário correto.</textarea>
+
+                <!-- Botões de Edição -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <button onclick="pasteText()" data-voice="Colar texto copiado" class="btn-accessible">
+                        <i data-lucide="clipboard-paste" class="w-9 h-9 shrink-0" stroke-width="3"></i>
+                        <span>Colar Texto</span>
+                    </button>
+
+                    <button onclick="clearText()" data-voice="Limpar todo o texto" class="btn-accessible btn-danger">
+                        <i data-lucide="trash-2" class="w-9 h-9 shrink-0" stroke-width="3"></i>
+                        <span>Limpar Tudo</span>
+                    </button>
+                </div>
+
+                <!-- Botões de Controle de Áudio -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <button onclick="readAloudText()" data-voice="Ler todo o texto em voz alta" class="btn-accessible btn-success !min-h-[96px]">
+                        <i data-lucide="play" class="w-10 h-10 shrink-0" stroke-width="3"></i>
+                        <span>LER TUDO</span>
+                    </button>
+
+                    <button onclick="togglePauseResumeReading()" id="btn-pause-read" data-voice="Pausar ou continuar leitura" class="btn-accessible btn-primary !min-h-[96px]">
+                        <i id="pause-read-icon" data-lucide="pause" class="w-10 h-10 shrink-0" stroke-width="3"></i>
+                        <span id="pause-read-label">PAUSAR / CONTINUAR</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TELA 4: CONTATOS RÁPIDOS -->
+        <section id="view-contacts" class="hidden space-y-6">
+            <div class="accessible-card p-5">
+                <h2 class="text-2xl font-bold mb-2 flex items-center gap-3">
+                    <i data-lucide="phone-call" class="w-9 h-9" stroke-width="3"></i>
+                    Contatos Rápidos
+                </h2>
+                <p class="text-base opacity-90">Toque no botão verde grande para iniciar a ligação.</p>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Contato 1: Filho(a) -->
+                <div class="accessible-card p-5 flex flex-col sm:flex-row items-center justify-between gap-5">
+                    <div class="flex items-center gap-4 text-center sm:text-left flex-col sm:flex-row">
+                        <div class="w-20 h-20 rounded-full border-4 flex items-center justify-center shrink-0" style="border-color: var(--border-color); background-color: var(--bg-primary);">
+                            <i data-lucide="heart-handshake" class="w-11 h-11" stroke-width="2.5"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold">Filho(a) - Mariana</h3>
+                            <p class="text-lg font-bold opacity-90">(11) 98765-4321</p>
+                        </div>
+                    </div>
+                    <button onclick="simulateCall('Filha Mariana', '(11) 98765-4321')" data-voice="Ligar para Filha Mariana" class="btn-accessible btn-success w-full sm:w-auto !px-8 !min-h-[92px]">
+                        <i data-lucide="phone" class="w-9 h-9 shrink-0" stroke-width="3"></i>
+                        <span>LIGAR</span>
+                    </button>
+                </div>
+
+                <!-- Contato 2: Médico -->
+                <div class="accessible-card p-5 flex flex-col sm:flex-row items-center justify-between gap-5">
+                    <div class="flex items-center gap-4 text-center sm:text-left flex-col sm:flex-row">
+                        <div class="w-20 h-20 rounded-full border-4 flex items-center justify-center shrink-0" style="border-color: var(--border-color); background-color: var(--bg-primary);">
+                            <i data-lucide="stethoscope" class="w-11 h-11" stroke-width="2.5"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold">Dr. Carlos (Médico)</h3>
+                            <p class="text-lg font-bold opacity-90">(11) 3344-5566</p>
+                        </div>
+                    </div>
+                    <button onclick="simulateCall('Doutor Carlos, Médico', '(11) 3344-5566')" data-voice="Ligar para Doutor Carlos, Médico" class="btn-accessible btn-success w-full sm:w-auto !px-8 !min-h-[92px]">
+                        <i data-lucide="phone" class="w-9 h-9 shrink-0" stroke-width="3"></i>
+                        <span>LIGAR</span>
+                    </button>
+                </div>
+
+                <!-- Contato 3: Emergência SAMU 192 -->
+                <div class="accessible-card p-5 flex flex-col sm:flex-row items-center justify-between gap-5">
+                    <div class="flex items-center gap-4 text-center sm:text-left flex-col sm:flex-row">
+                        <div class="w-20 h-20 rounded-full border-4 flex items-center justify-center shrink-0" style="border-color: var(--border-color); background-color: var(--danger-bg); color: var(--danger-text);">
+                            <i data-lucide="ambulance" class="w-11 h-11" stroke-width="2.5"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold">Emergência SAMU</h3>
+                            <p class="text-xl font-bold">Número: 192</p>
+                        </div>
+                    </div>
+                    <button onclick="simulateCall('Emergência SAMU 192', '192')" data-voice="Ligar para Emergência SAMU 192" class="btn-accessible btn-danger w-full sm:w-auto !px-8 !min-h-[92px]">
+                        <i data-lucide="phone-outgoing" class="w-9 h-9 shrink-0" stroke-width="3"></i>
+                        <span>CHAMAR 192</span>
+                    </button>
+                </div>
+
+                <!-- Contato 4: Polícia 190 -->
+                <div class="accessible-card p-5 flex flex-col sm:flex-row items-center justify-between gap-5">
+                    <div class="flex items-center gap-4 text-center sm:text-left flex-col sm:flex-row">
+                        <div class="w-20 h-20 rounded-full border-4 flex items-center justify-center shrink-0" style="border-color: var(--border-color); background-color: var(--danger-bg); color: var(--danger-text);">
+                            <i data-lucide="shield-alert" class="w-11 h-11" stroke-width="2.5"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold">Polícia Militar</h3>
+                            <p class="text-xl font-bold">Número: 190</p>
+                        </div>
+                    </div>
+                    <button onclick="simulateCall('Polícia Militar 190', '190')" data-voice="Ligar para Polícia Militar 190" class="btn-accessible btn-danger w-full sm:w-auto !px-8 !min-h-[92px]">
+                        <i data-lucide="phone-outgoing" class="w-9 h-9 shrink-0" stroke-width="3"></i>
+                        <span>CHAMAR 190</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TELA 5: LEMBRETE DE REMÉDIOS -->
+        <section id="view-meds" class="hidden space-y-6">
+            <div class="accessible-card p-5 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold mb-1 flex items-center gap-3">
+                        <i data-lucide="pill" class="w-9 h-9" stroke-width="3"></i>
+                        Meus Remédios de Hoje
+                    </h2>
+                    <p class="text-base opacity-90">Toque no botão grande quando tomar cada remédio.</p>
+                </div>
+                <button onclick="testMedAlarm()" data-voice="Testar aviso sonoro de remédio" class="btn-accessible !min-h-[72px] text-base">
+                    <i data-lucide="bell-ring" class="w-7 h-7" stroke-width="3"></i>
+                    <span>Testar Alarme</span>
+                </button>
+            </div>
+
+            <!-- Lista de Medicamentos -->
+            <div id="meds-list" class="space-y-6">
+                <!-- Renderizado via JavaScript -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL DE CHAMADA / CONFIRMAÇÃO VISUAL E SONORA (Substitui alert/confirm) -->
+    <div id="accessible-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+        <div class="accessible-card max-w-xl w-full p-6 sm:p-8 text-center space-y-6">
+            <div id="modal-icon-container" class="w-24 h-24 rounded-full border-4 mx-auto flex items-center justify-center" style="border-color: var(--border-color); background-color: var(--accent-bg); color: var(--accent-text);">
+                <i id="modal-icon" data-lucide="phone-call" class="w-14 h-14 animate-bounce" stroke-width="3"></i>
+            </div>
+            <h3 id="modal-title" class="text-2xl sm:text-3xl font-bold">Ligando...</h3>
+            <p id="modal-message" class="text-xl font-bold opacity-95">Chamando contato...</p>
+            <button onclick="closeModal()" data-voice="Fechar aviso ou encerrar chamada" class="btn-accessible btn-danger w-full !min-h-[92px] text-xl">
+                <i data-lucide="x-circle" class="w-9 h-9" stroke-width="3"></i>
+                <span id="modal-btn-text">ENCERRAR / FECHAR</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================================================
+           ESTADO GLOBAL DO APLICATIVO
+           ========================================================================== */
+        const state = {
+            fontSize: 24, // Tamanho inicial entre 18px e 42px
+            themeIndex: 0, // 0: Claro, 1: Alto Contraste Preto/Amarelo, 2: Escuro Suave
+            themes: [
+                { class: '', label: 'Cores: Claro', voiceName: 'Modo Claro Padrão ativado' },
+                { class: 'theme-high-contrast', label: 'Cores: Amarelo', voiceName: 'Modo Alto Contraste Preto e Amarelo ativado' },
+                { class: 'theme-soft-dark', label: 'Cores: Escuro', voiceName: 'Modo Escuro Suave ativado' }
+            ],
+            voiceEnabled: true,
+            currentView: 'home',
+            cameraStream: null,
+            isFrozen: false,
+            flashOn: false,
+            zoomLevel: 1,
+            meds: [
+                { id: 1, time: '08:00', name: 'Losartana 50mg', desc: '1 comprimido para pressão (após o café)', taken: false },
+                { id: 2, time: '12:30', name: 'Vitamina D', desc: '1 cápsula junto com o almoço', taken: false },
+                { id: 3, time: '20:00', name: 'Sinvastatina 20mg', desc: '1 comprimido antes de dormir', taken: false }
+            ]
+        };
+
+        /* ==========================================================================
+           SISTEMA DE VOZ (WEB SPEECH API - PT-BR) E SONS DE FEEDBACK (WEB AUDIO API)
+           ========================================================================== */
+        function speak(text, force = false) {
+            if (!state.voiceEnabled && !force) return;
+            if (!('speechSynthesis' in window)) return;
+
+            try {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'pt-BR';
+                utterance.rate = 0.92; // Velocidade levemente mais pausada para facilitar compreensão
+                utterance.pitch = 1.0;
+
+                // Tenta selecionar uma voz em português do Brasil
+                const voices = window.speechSynthesis.getVoices();
+                const ptVoice = voices.find(v => v.lang.includes('pt-BR')) || voices.find(v => v.lang.includes('pt'));
+                if (ptVoice) utterance.voice = ptVoice;
+
+                window.speechSynthesis.speak(utterance);
+            } catch (e) {
+                console.error('Erro na síntese de voz:', e);
+            }
+        }
+
+        // Gera bipes sonoros agradáveis sem depender de arquivos externos
+        function playTone(freq = 520, duration = 0.25, type = 'sine') {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                const ctx = new AudioCtx();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + duration);
+            } catch (e) {
+                console.warn('Áudio não suportado:', e);
+            }
+        }
+
+        // Adiciona feedback auditivo ao focar ou clicar em qualquer botão com data-voice
+        function setupVoiceFeedbackListeners() {
+            document.addEventListener('focusin', (e) => {
+                const target = e.target.closest('[data-voice]');
+                if (target && state.voiceEnabled) {
+                    speak(target.getAttribute('data-voice'));
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                const target = e.target.closest('[data-voice]');
+                if (target && state.voiceEnabled) {
+                    // Evita duplicar fala se o botão tiver sua própria fala específica
+                    if (!target.hasAttribute('data-custom-speech')) {
+                        speak(target.getAttribute('data-voice'));
+                    }
+                }
+            });
+        }
+
+        /* ==========================================================================
+           CONTROLES PERMANENTES DO TOPO (FONTE, CONTRASTE, VOZ GLOBAL)
+           ========================================================================== */
+        function changeFontSize(delta) {
+            const newSize = Math.min(42, Math.max(18, state.fontSize + delta));
+            state.fontSize = newSize;
+            document.documentElement.style.setProperty('--base-font-size', `${newSize}px`);
+            document.getElementById('font-size-badge').textContent = `Letra: ${newSize}px`;
+            playTone(delta > 0 ? 600 : 400, 0.15);
+            speak(`Tamanho da letra ajustado para ${newSize}`);
+        }
+
+        function cycleTheme() {
+            state.themeIndex = (state.themeIndex + 1) % state.themes.length;
+            const currentTheme = state.themes[state.themeIndex];
+            document.body.className = `min-h-screen flex flex-col ${currentTheme.class}`;
+            document.getElementById('theme-label').textContent = currentTheme.label;
+            playTone(550, 0.15);
+            speak(currentTheme.voiceName);
+        }
+
+        function toggleGlobalVoice() {
+            state.voiceEnabled = !state.voiceEnabled;
+            const btn = document.getElementById('btn-voice-toggle');
+            const label = document.getElementById('voice-label');
+            const icon = document.getElementById('voice-icon');
+
+            btn.setAttribute('aria-pressed', state.voiceEnabled);
+
+            if (state.voiceEnabled) {
+                btn.classList.add('btn-primary');
+                label.textContent = 'Voz: LIGADA';
+                icon.setAttribute('data-lucide', 'volume-2');
+                playTone(660, 0.2);
+                speak('Leitura em voz alta ativada', true);
+            } else {
+                btn.classList.remove('btn-primary');
+                label.textContent = 'Voz: DESLIGADA';
+                icon.setAttribute('data-lucide', 'volume-x');
+                window.speechSynthesis.cancel();
+                playTone(330, 0.2);
+            }
+            lucide.createIcons();
+        }
+
+        /* ==========================================================================
+           NAVEGAÇÃO ENTRE TELAS
+           ========================================================================== */
+        function navigateTo(viewName) {
+            const views = ['home', 'magnifier', 'reader', 'contacts', 'meds'];
+            views.forEach(v => {
+                document.getElementById(`view-${v}`).classList.add('hidden');
+            });
+
+            document.getElementById(`view-${viewName}`).classList.remove('hidden');
+            const backBar = document.getElementById('back-bar');
+
+            if (viewName === 'home') {
+                backBar.classList.add('hidden');
+                stopCamera();
+            } else {
+                backBar.classList.remove('hidden');
+            }
+
+            if (viewName === 'magnifier') {
+                startCamera();
+            } else {
+                stopCamera();
+            }
+
+            if (viewName === 'meds') {
+                renderMeds();
+            }
+
+            state.currentView = viewName;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /* ==========================================================================
+           FUNCIONALIDADE 1: LUPA DE LEITURA (CÂMERA + ZOOM + LANTERNA + CONGELAR)
+           ========================================================================== */
+        async function startCamera() {
+            const video = document.getElementById('camera-feed');
+            const fallback = document.getElementById('camera-fallback');
+            const canvas = document.getElementById('frozen-canvas');
+
+            state.isFrozen = false;
+            canvas.classList.add('hidden');
+            video.classList.remove('hidden');
+            fallback.classList.add('hidden');
+
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error('API de câmera indisponível');
+                }
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { ideal: 'environment' } },
+                    audio: false
+                });
+                state.cameraStream = stream;
+                video.srcObject = stream;
+            } catch (err) {
+                console.warn('Não foi possível acessar a câmera traseira:', err);
+                video.classList.add('hidden');
+                fallback.classList.remove('hidden');
+            }
+        }
+
+        function stopCamera() {
+            if (state.cameraStream) {
+                state.cameraStream.getTracks().forEach(track => track.stop());
+                state.cameraStream = null;
+            }
+            state.flashOn = false;
+            updateFlashUI();
+        }
+
+        function updateZoom(val) {
+            state.zoomLevel = parseFloat(val);
+            document.getElementById('zoom-value').textContent = `${state.zoomLevel.toFixed(1)}x`;
+            const video = document.getElementById('camera-feed');
+            const canvas = document.getElementById('frozen-canvas');
+            const demoEl = document.getElementById('demo-magnifier-box');
+
+            video.style.transform = `scale(${state.zoomLevel})`;
+            canvas.style.transform = `scale(${state.zoomLevel})`;
+            if (demoEl) demoEl.style.transform = `scale(${state.zoomLevel})`;
+        }
+
+        async function toggleFlashlight() {
+            state.flashOn = !state.flashOn;
+            const video = document.getElementById('camera-feed');
+            const canvas = document.getElementById('frozen-canvas');
+
+            // Tenta ativar o flash LED real do celular se suportado
+            if (state.cameraStream) {
+                const track = state.cameraStream.getVideoTracks()[0];
+                if (track && track.getCapabilities) {
+                    const capabilities = track.getCapabilities();
+                    if (capabilities.torch) {
+                        try {
+                            await track.applyConstraints({ advanced: [{ torch: state.flashOn }] });
+                        } catch (e) {
+                            console.warn('Erro ao ativar lanterna física:', e);
+                        }
+                    }
+                }
+            }
+
+            // Aplica também aumento de brilho e contraste na imagem para ajudar na leitura
+            const filterStyle = state.flashOn ? 'brightness(1.35) contrast(1.25)' : 'none';
+            video.style.filter = filterStyle;
+            canvas.style.filter = filterStyle;
+
+            updateFlashUI();
+            speak(state.flashOn ? 'Luz e alto brilho ligados' : 'Luz e brilho desligados');
+        }
+
+        function updateFlashUI() {
+            const btn = document.getElementById('btn-flash');
+            const label = document.getElementById('flash-label');
+            if (state.flashOn) {
+                btn.classList.add('btn-primary');
+                label.textContent = 'Luz / Brilho: ON';
+            } else {
+                btn.classList.remove('btn-primary');
+                label.textContent = 'Luz / Brilho: OFF';
+            }
+        }
+
+        function toggleFreeze() {
+            const video = document.getElementById('camera-feed');
+            const canvas = document.getElementById('frozen-canvas');
+            const label = document.getElementById('freeze-label');
+            const icon = document.getElementById('freeze-icon');
+
+            if (!state.cameraStream && video.classList.contains('hidden')) {
+                speak('Nenhuma câmera ativa para congelar');
+                return;
+            }
+
+            state.isFrozen = !state.isFrozen;
+
+            if (state.isFrozen) {
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                video.classList.add('hidden');
+                canvas.classList.remove('hidden');
+                label.textContent = 'Voltar Câmera';
+                icon.setAttribute('data-lucide', 'play-circle');
+                speak('Imagem congelada. Use o controle de zoom para ler com calma.');
+            } else {
+                canvas.classList.add('hidden');
+                video.classList.remove('hidden');
+                label.textContent = 'Congelar Foto';
+                icon.setAttribute('data-lucide', 'pause-circle');
+                speak('Câmera ao vivo retomada.');
+            }
+            lucide.createIcons();
+        }
+
+        function activateDemoMagnifier() {
+            const container = document.getElementById('camera-container');
+            const fallback = document.getElementById('camera-fallback');
+            fallback.classList.add('hidden');
+
+            let demoBox = document.getElementById('demo-magnifier-box');
+            if (!demoBox) {
+                demoBox = document.createElement('div');
+                demoBox.id = 'demo-magnifier-box';
+                demoBox.className = 'p-6 bg-white text-black font-bold text-center rounded-lg max-w-md transition-transform';
+                demoBox.innerHTML = `
+                    <p class="text-sm uppercase tracking-wider text-red-700 mb-2">Exemplo de Bula de Remédio</p>
+                    <p class="text-base">LOSARTANA POTÁSSICA 50mg</p>
+                    <p class="text-xs mt-2">POSOLOGIA: Tomar 1 comprimido por via oral uma vez ao dia, com água. Conservar em temperatura ambiente (15°C a 30°C).</p>
+                `;
+                container.appendChild(demoBox);
+            }
+            speak('Bula de exemplo exibida. Arraste a barra de zoom para aumentar.');
+        }
+
+        /* ==========================================================================
+           FUNCIONALIDADE 2: LER TEXTO EM VOZ ALTA
+           ========================================================================== */
+        async function pasteText() {
+            const textarea = document.getElementById('text-to-read');
+            try {
+                const text = await navigator.clipboard.readText();
+                if (text) {
+                    textarea.value = text;
+                    playTone(600, 0.15);
+                    speak('Texto colado com sucesso. Toque em Ler Tudo para ouvir.');
+                } else {
+                    speak('Não há texto copiado na área de transferência.');
+                }
+            } catch (err) {
+                textarea.focus();
+                speak('Toque dentro da caixa branca e escolha Colar no teclado.');
+            }
+        }
+
+        function clearText() {
+            const textarea = document.getElementById('text-to-read');
+            textarea.value = '';
+            window.speechSynthesis.cancel();
+            playTone(380, 0.15);
+            speak('Texto apagado.');
+        }
+
+        function readAloudText() {
+            const text = document.getElementById('text-to-read').value.trim();
+            if (!text) {
+                speak('A caixa de texto está vazia. Digite ou cole um texto primeiro.', true);
+                return;
+            }
+            // Lê mesmo se a voz global dos botões estiver desligada, pois o usuário pediu explicitamente
+            speak(text, true);
+        }
+
+        function togglePauseResumeReading() {
+            if (!('speechSynthesis' in window)) return;
+
+            if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+                window.speechSynthesis.pause();
+                playTone(420, 0.15);
+            } else if (window.speechSynthesis.paused) {
+                window.speechSynthesis.resume();
+                playTone(580, 0.15);
+            } else {
+                readAloudText();
+            }
+        }
+
+        /* ==========================================================================
+           FUNCIONALIDADE 3: CONTATOS RÁPIDOS (LIGAÇÃO SIMULADA COM FEEDBACK)
+           ========================================================================== */
+        let callInterval = null;
+
+        function simulateCall(name, number) {
+            const modal = document.getElementById('accessible-modal');
+            const title = document.getElementById('modal-title');
+            const msg = document.getElementById('modal-message');
+            const btnText = document.getElementById('modal-btn-text');
+            const icon = document.getElementById('modal-icon');
+
+            title.textContent = `Ligando para ${name}`;
+            msg.textContent = `Discando ${number}... Aguarde na linha.`;
+            btnText.textContent = 'ENCERRAR LIGAÇÃO';
+            icon.setAttribute('data-lucide', 'phone-call');
+            lucide.createIcons();
+
+            modal.classList.remove('hidden');
+            speak(`Ligando para ${name}. Discando ${number}.`, true);
+
+            // Som de chamada telefônica periódica
+            playTone(440, 0.4);
+            callInterval = setInterval(() => {
+                playTone(440, 0.4);
+            }, 2200);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('accessible-modal');
+            modal.classList.add('hidden');
+            if (callInterval) {
+                clearInterval(callInterval);
+                callInterval = null;
+            }
+            window.speechSynthesis.cancel();
+            playTone(320, 0.2);
+            speak('Aviso fechado.');
+        }
+
+        /* ==========================================================================
+           FUNCIONALIDADE 4: LEMBRETE DE REMÉDIOS
+           ========================================================================== */
+        function renderMeds() {
+            const container = document.getElementById('meds-list');
+            container.innerHTML = '';
+
+            state.meds.forEach(med => {
+                const card = document.createElement('div');
+                card.className = 'accessible-card p-5 sm:p-6 flex flex-col gap-5';
+
+                const statusBadge = med.taken
+                    ? `<span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-lg border-2" style="background-color: var(--success-bg); color: var(--success-text); border-color: var(--border-color);">
+                        <i data-lucide="check-circle-2" class="w-7 h-7" stroke-width="3"></i> JÁ TOMADO
+                       </span>`
+                    : `<span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-lg border-2" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+                        <i data-lucide="clock" class="w-7 h-7" stroke-width="3"></i> PENDENTE
+                       </span>`;
+
+                const buttonHtml = med.taken
+                    ? `<button onclick="toggleMedTaken(${med.id})" data-voice="Desmarcar ${med.name}" class="btn-accessible w-full !min-h-[88px]">
+                        <i data-lucide="rotate-ccw" class="w-9 h-9" stroke-width="3"></i>
+                        <span>Desmarcar Remédio</span>
+                       </button>`
+                    : `<button onclick="toggleMedTaken(${med.id})" data-voice="Marcar ${med.name} como tomado" class="btn-accessible btn-success w-full !min-h-[96px] text-xl">
+                        <i data-lucide="check" class="w-10 h-10" stroke-width="3"></i>
+                        <span>MARCAR COMO TOMADO</span>
+                       </button>`;
+
+                card.innerHTML = `
+                    <div class="flex flex-wrap items-center justify-between gap-3 border-b-2 pb-4" style="border-color: var(--border-color);">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl font-bold px-4 py-2 rounded-xl border-4" style="border-color: var(--border-color); background-color: var(--accent-bg); color: var(--accent-text);">
+                                ${med.time}
+                            </span>
+                            <h3 class="text-2xl font-bold">${med.name}</h3>
+                        </div>
+                        ${statusBadge}
+                    </div>
+                    <p class="text-xl font-bold opacity-95">${med.desc}</p>
+                    ${buttonHtml}
+                `;
+
+                container.appendChild(card);
+            });
+
+            lucide.createIcons();
+        }
+
+        function toggleMedTaken(id) {
+            const med = state.meds.find(m => m.id === id);
+            if (!med) return;
+
+            med.taken = !med.taken;
+            renderMeds();
+
+            if (med.taken) {
+                // Acorde sonoro de confirmação positiva
+                playTone(523.25, 0.15);
+                setTimeout(() => playTone(659.25, 0.25), 150);
+                speak(`Muito bem! Remédio ${med.name} das ${med.time} marcado como tomado.`, true);
+            } else {
+                playTone(400, 0.2);
+                speak(`Remédio ${med.name} desmarcado.`, true);
+            }
+        }
+
+        function testMedAlarm() {
+            const nextMed = state.meds.find(m => !m.taken) || state.meds[0];
+            const modal = document.getElementById('accessible-modal');
+            const title = document.getElementById('modal-title');
+            const msg = document.getElementById('modal-message');
+            const btnText = document.getElementById('modal-btn-text');
+            const icon = document.getElementById('modal-icon');
+
+            title.textContent = `Hora do Remédio: ${nextMed.time}`;
+            msg.textContent = `${nextMed.name} - ${nextMed.desc}`;
+            btnText.textContent = 'ENTENDI, FECHAR AVISO';
+            icon.setAttribute('data-lucide', 'bell-ring');
+            lucide.createIcons();
+
+            modal.classList.remove('hidden');
+
+            // Sequência de alerta sonoro
+            playTone(660, 0.25);
+            setTimeout(() => playTone(880, 0.35), 280);
+            speak(`Atenção! Hora de tomar seu remédio: ${nextMed.name}. ${nextMed.desc}`, true);
+        }
+
+        /* ==========================================================================
+           INICIALIZAÇÃO
+           ========================================================================== */
+        window.onload = function () {
+            lucide.createIcons();
+            setupVoiceFeedbackListeners();
+
+            // Carrega vozes do navegador
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.getVoices();
+                window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+            }
+
+            // Boas-vindas em áudio ao abrir
+            setTimeout(() => {
+                speak('Bem-vindo ao Fácil Acesso. Toque em uma das quatro opções grandes na tela.');
+            }, 600);
+        };
+    </script>
+</body>
+</html>
